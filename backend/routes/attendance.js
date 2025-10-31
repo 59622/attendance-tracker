@@ -1,99 +1,61 @@
 const express = require('express');
-const router = express.Router();
-const Attendance = require('../models/Attendance');
 
-// GET all attendance records
-router.get('/', async (req, res, next) => {
-  try {
-    const { date, employeeName, employeeID } = req.query;
-    
-    let records;
-    if (date || employeeName || employeeID) {
-      records = await Attendance.getByFilters({ date, employeeName, employeeID });
-    } else {
-      records = await Attendance.getAll();
+module.exports = (pool) => {
+  const router = express.Router();
+
+  // Get all attendance records
+  router.get('/', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM attendance ORDER BY id ASC');
+      res.json({ success: true, data: result.rows });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, error: 'Failed to fetch attendance' });
     }
-    
-    res.json({
-      success: true,
-      data: records,
-      count: records.length
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+  });
 
-// GET attendance statistics
-router.get('/stats', async (req, res, next) => {
-  try {
-    const stats = await Attendance.getStats();
-    res.json({
-      success: true,
-      data: stats
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST new attendance record
-router.post('/', async (req, res, next) => {
-  try {
-    const { employeeName, employeeID, date, status } = req.body;
-
-    // Validation
-    if (!employeeName || !employeeID || !date || !status) {
-      return res.status(400).json({
-        success: false,
-        error: 'All fields are required'
-      });
+  // Add a new attendance record
+  router.post('/', async (req, res) => {
+    const { employee_name, status, date } = req.body;
+    try {
+      const result = await pool.query(
+        'INSERT INTO attendance(employee_name, status, date) VALUES($1, $2, $3) RETURNING *',
+        [employee_name, status, date || new Date()]
+      );
+      res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, error: 'Failed to add attendance' });
     }
+  });
 
-    if (!['Present', 'Absent'].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Status must be either "Present" or "Absent"'
-      });
-    }
-
-    const record = await Attendance.create({
-      employeeName,
-      employeeID,
-      date,
-      status
-    });
-
-    res.status(201).json({
-      success: true,
-      message: 'Attendance recorded successfully',
-      data: record
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// DELETE attendance record
-router.delete('/:id', async (req, res, next) => {
-  try {
+  // Update attendance record
+  router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const result = await Attendance.delete(id);
-    
-    if (result.deleted === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Record not found'
-      });
+    const { employee_name, status, date } = req.body;
+    try {
+      const result = await pool.query(
+        'UPDATE attendance SET employee_name=$1, status=$2, date=$3 WHERE id=$4 RETURNING *',
+        [employee_name, status, date, id]
+      );
+      res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, error: 'Failed to update attendance' });
     }
+  });
 
-    res.json({
-      success: true,
-      message: 'Attendance record deleted successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+  // Delete attendance record
+  router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+      await pool.query('DELETE FROM attendance WHERE id=$1', [id]);
+      res.json({ success: true, message: 'Attendance record deleted' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, error: 'Failed to delete attendance' });
+    }
+  });
 
-module.exports = router;
+  return router;
+};
