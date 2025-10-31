@@ -1,63 +1,95 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { Pool } = require('pg');
 const attendanceRoutes = require('./routes/attendance');
 const errorHandler = require('./middleware/errorHandler');
-const { initializeDatabase, testConnection } = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Database setup
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // required for Render PostgreSQL
+  },
+});
+
+// Test database connection
+async function testConnection() {
+  try {
+    const client = await pool.connect();
+    await client.query('SELECT NOW()');
+    client.release();
+    console.log('✅ Connected to PostgreSQL database successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Database connection failed:', error.message);
+    return false;
+  }
+}
+
+// Initialize tables (optional)
+async function initializeDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS attendance (
+        id SERIAL PRIMARY KEY,
+        employee_name VARCHAR(100) NOT NULL,
+        status VARCHAR(20) NOT NULL,
+        date DATE NOT NULL DEFAULT CURRENT_DATE
+      );
+    `);
+    console.log('✅ Attendance table initialized');
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error.message);
+  }
+}
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Initialize database on startup
-async function startServer() {
+// Routes
+app.use('/api/attendance', attendanceRoutes(pool));
+
+// Health check route
+app.get('/api/health', async (req, res) => {
   try {
-    // Test database connection
-    const isConnected = await testConnection();
-    if (!isConnected) {
-      console.error('Failed to connect to database. Please check your MySQL configuration.');
-      process.exit(1);
-    }
+    const result = await pool.query('SELECT NOW()');
+    res.json({
+      success: true,
+      message: 'Attendance Tracker API is running',
+      database: 'PostgreSQL',
+      serverTime: result.rows[0].now,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Database check failed' });
+  }
+});
 
-    // Initialize database tables
+// Error handling middleware
+app.use(errorHandler);
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'Route not found',
+  });
+});
+
+// Start server
+(async function startServer() {
+  const connected = await testConnection();
+  if (connected) {
     await initializeDatabase();
-    console.log('Database initialization completed');
-
-    // Routes
-    app.use('/api/attendance', attendanceRoutes);
-
-    // Health check route
-    app.get('/api/health', (req, res) => {
-      res.json({ 
-        success: true, 
-        message: 'Attendance Tracker API is running',
-        database: 'MySQL',
-        timestamp: new Date().toISOString()
-      });
-    });
-
-    // Error handling middleware
-    app.use(errorHandler);
-
-    // 404 handler
-    app.use('*', (req, res) => {
-      res.status(404).json({
-        success: false,
-        error: 'Route not found'
-      });
-    });
-
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`Health check: http://localhost:${PORT}/api/health`);
+      console.log(`🚀 Server is running on port ${PORT}`);
     });
-
-  } catch (error) {
-    console.error('Failed to start server:', error.message);
+  } else {
+    console.error('Server stopped due to database connection issue');
     process.exit(1);
   }
-}
-
-startServer();
+})();
