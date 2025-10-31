@@ -1,0 +1,191 @@
+/* Improved Form Container */
+.attendance-form {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  max-width: 500px;
+  margin: 2rem auto;
+  border: 1px solid #e1e5e9;
+}
+
+.attendance-form h2 {
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+/* Improved Form Groups */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.form-group label::after {
+  content: " *";
+  color: #e74c3c;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #fafbfc;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3498db;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Improved Button */
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Improved Navigation */
+.app-nav {
+  background: white;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 0;
+}
+
+.app-nav a {
+  padding: 1.2rem 2.5rem;
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: #2c3e50;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.app-nav a:hover {
+  background-color: #f8f9fa;
+  color: #3498db;
+}
+
+.app-nav a.active {
+  border-bottom-color: #3498db;
+  color: #3498db;
+  font-weight: 600;
+}
+
+/* Page Header Improvements */
+.page-header {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin-bottom: 2rem;
+}
+
+.page-header h2 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.page-header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 1rem;
+}
+
+.secondary-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 2px solid white;
+  padding: 0.7rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+  background: white;
+  color: #667eea;
+}
+
+/* Message Styles */
+.message {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Required field indicator */
+.required::after {
+  content: " *";
+  color: #e74c3c;
+}
+.app-footer {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  text-align: center;
+  padding: 2rem 1rem;
+  margin-top: 3rem;
+  border-top: 4px solid #3498db;
+}
+
+.app-footer p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
